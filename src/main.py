@@ -1,4 +1,3 @@
-from pkgutil import get_data
 from cnn import LeNet
 from config import IMG_DIR_TRAIN, CSV_DIR_TRAIN
 from loader import get_dataloaders
