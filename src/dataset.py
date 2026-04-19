@@ -15,20 +15,23 @@ class DigitDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
+        img_id = row["Id"]
+        label = int(row["Category"])
 
-        img_path = f"{self.img_dir}/{row[1]}/{row[0]}.png"
-        label = int(row[1])
+        img_path = f"{self.img_dir}/{label}/{img_id}.png"
 
-        # read the image in grayscale
         image = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
 
-        # resize the image to 28x28
-        image = cv2.resize(image, (28, 28))
+        if image is None:
+            raise FileNotFoundError(img_path)
 
-        # normalize to 0-1
         image = image.astype("float32") / 255.0
 
-        # convert to tensor (C, H, W)
-        image = torch.from_numpy(image).unsqueeze(0)
+        if self.transform:
+            image = self.transform(image)
+        else:
+            image = torch.from_numpy(image).unsqueeze(0)
+
+        label = torch.tensor(label, dtype=torch.long)
 
         return image, label

@@ -5,6 +5,7 @@ description = "Group 12's approach to achieving the highest score for hindi digi
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "matplotlib>=3.10.8",
     "opencv-python>=4.13.0.92",
     "pandas>=3.0.2",
     "scikit-learn>=1.8.0",
