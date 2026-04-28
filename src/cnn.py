@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class LeNet(nn.Module):
@@ -31,7 +30,7 @@ class LeNet(nn.Module):
         x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x
-    
+
 
 class EnhancedLeNet(nn.Module):
     def __init__(self, num_classes=10, dropout_rate=0.5):
@@ -81,4 +80,3 @@ class EnhancedLeNet(nn.Module):
         x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x
-
