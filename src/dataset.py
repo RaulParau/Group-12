@@ -5,10 +5,11 @@ import cv2
 
 
 class DigitDataset(Dataset):
-    def __init__(self, df, img_dir, transform=None):
+    def __init__(self, df, img_dir, transform=None, inference=False):
         self.df = df.reset_index(drop=True)
         self.img_dir = img_dir
         self.transform = transform
+        self.inference = inference
 
     def __len__(self):
         return len(self.df)
@@ -16,9 +17,12 @@ class DigitDataset(Dataset):
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
         img_id = row["Id"]
-        label = int(row["Category"])
 
-        img_path = f"{self.img_dir}/{label}/{img_id}.png"
+        if not self.inference:
+            label = int(row["Category"])
+            img_path = f"{self.img_dir}/{label}/{img_id}.png"
+        else:
+            img_path = f"{self.img_dir}/{img_id}.png"
 
         image = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
 
@@ -31,6 +35,9 @@ class DigitDataset(Dataset):
             image = self.transform(image)
         else:
             image = torch.from_numpy(image).unsqueeze(0)
+
+        if self.inference:
+            return image, img_id
 
         label = torch.tensor(label, dtype=torch.long)
 
