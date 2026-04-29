@@ -1,5 +1,11 @@
 from torch.utils.data import DataLoader, dataloader
-from config import IMG_DIR_TRAIN, CSV_DIR_TRAIN, BATCH_SIZE
+from config import (
+    IMG_DIR_TRAIN,
+    CSV_DIR_TRAIN,
+    BATCH_SIZE,
+    IMG_DIR_INFERENCE,
+    CSV_DIR_INFERENCE,
+)
 from dataset import DigitDataset
 from sklearn.model_selection import train_test_split
 import pandas as pd
@@ -22,3 +28,15 @@ def get_dataloaders(batch_size=BATCH_SIZE):
     dataloader_val = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     dataloader_test = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     return (dataloader_train, dataloader_val, dataloader_test)
+
+
+def get_inference_dataloader(batch_size=BATCH_SIZE):
+    df = pd.read_csv(CSV_DIR_INFERENCE)
+
+    inference_dataset = DigitDataset(
+        df=df, img_dir=IMG_DIR_INFERENCE, transform=transform(), inference=True
+    )
+    dataloader_inf = DataLoader(
+        dataset=inference_dataset, batch_size=batch_size, shuffle=False
+    )
+    return dataloader_inf
