@@ -1,7 +1,8 @@
-from cnn import LeNet, EnhancedLeNet
+from cnn import LeNet, EnhancedLeNet, CustomResNet
 from config import IMG_DIR_TRAIN, CSV_DIR_TRAIN, BEST_MODEL, param_config
 from loader import get_dataloaders
 from pathlib import Path
+from copy import deepcopy
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
@@ -28,19 +29,45 @@ def plot_training(train_losses, val_losses, val_accuracies):
 
 
 def train(config, verbose=False):
-    dataloader_train, dataloader_val, _ = get_dataloaders(batch_size=16)
+    dataloader_train, dataloader_val = get_dataloaders()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(
+        label_smoothing=config.get("label_smoothing", 0.0),
+    )
 
     if config["model"].lower() == "lenet":
         model = LeNet().to(device)
-    else:
+    elif config["model"].lower() == "enhancedlenet":
         model = EnhancedLeNet().to(device)
+    elif config["model"].lower() == "resnet":
+        model = CustomResNet().to(device)
+    else:
+        raise ValueError(f"Unsupported model: {config['model']}")
 
     if config["optimizer"].lower() == "adam":
-        optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
+        optimizer = torch.optim.Adam(
+            model.parameters(),
+            lr=config["lr"],
+            weight_decay=config.get("weight_decay", 0.0),
+        )
     else:
-        optimizer = torch.optim.AdamW(model.parameters(), lr=config["lr"])
+        optimizer = torch.optim.AdamW(
+            model.parameters(),
+            lr=config["lr"],
+            weight_decay=config.get("weight_decay", 0.0),
+        )
+
+    scheduler = None
+    if config.get("scheduler", "").lower() == "onecycle":
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(
+            optimizer,
+            max_lr=config["lr"],
+            epochs=config["epochs"],
+            steps_per_epoch=len(dataloader_train),
+            pct_start=config.get("pct_start", 0.3),
+            div_factor=config.get("div_factor", 25.0),
+            final_div_factor=config.get("final_div_factor", 1e4),
+        )
 
     train_losses = []
     val_losses = []
@@ -49,7 +76,7 @@ def train(config, verbose=False):
     best_acc = 0
     best_model_state = None
 
-    for epoch in range(10):
+    for epoch in range(config["epochs"]):
         model.train()
         train_loss = 0
         for images, labels in dataloader_train:
@@ -61,6 +88,8 @@ def train(config, verbose=False):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            if scheduler is not None:
+                scheduler.step()
 
             train_loss += loss.item()
 
@@ -83,8 +112,8 @@ def train(config, verbose=False):
 
         acc = correct / total
         if acc > best_acc:
-            best_acc = correct / total
-            best_model_state = model.state_dict()
+            best_acc = acc
+            best_model_state = deepcopy(model.state_dict())
 
         train_losses.append(train_loss / len(dataloader_train))
         val_losses.append(val_loss / len(dataloader_val))
@@ -121,5 +150,6 @@ if __name__ == "__main__":
             },
             save_path,
         )
+        print(f"New current best model saved with following config: {param_config}")
 
     plot_training(train_losses, val_losses, val_accuracies)

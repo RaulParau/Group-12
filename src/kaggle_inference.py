@@ -7,7 +7,7 @@ from config import (
     IMG_DIR_INFERENCE,
 )
 from loader import get_inference_dataloader
-from cnn import LeNet, EnhancedLeNet
+from cnn import LeNet, EnhancedLeNet, CustomResNet
 import torch
 from pathlib import Path
 import pandas as pd
@@ -19,10 +19,12 @@ def run_inference(model_path=BEST_MODEL, output_path=PATH_SUBMISSION):
     checkpoint = torch.load(model_path, map_location=device)
     config = checkpoint.get("config", {})
 
-    if config.get("model", "enhanced").lower() == "lenet":
+    if config.get("model").lower() == "lenet":
         model = LeNet().to(device)
-    else:
+    elif config.get("model").lower() == "enhancedlenet":
         model = EnhancedLeNet().to(device)
+    else:
+        model = CustomResNet().to(device)
 
     model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
@@ -51,5 +53,5 @@ def run_inference(model_path=BEST_MODEL, output_path=PATH_SUBMISSION):
     print(f"Saved submission to {output_path}")
 
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     run_inference()

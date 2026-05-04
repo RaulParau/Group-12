@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torchvision.models as models
 
 
 class LeNet(nn.Module):
@@ -81,20 +82,28 @@ class EnhancedLeNet(nn.Module):
         x = self.classifier(x)
         return x
 
-import torchvision.models as models
 
 class CustomResNet(nn.Module):
     def __init__(self, num_classes=10):
         super(CustomResNet, self).__init__()
 
-        self.model = models.resnet18(weights=None)
-        
+        self.model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+
+        old_conv1 = self.model.conv1
         self.model.conv1 = nn.Conv2d(
-            in_channels=1, out_channels=64, kernel_size=3, stride=1, padding=1, bias=False
+            in_channels=1,
+            out_channels=old_conv1.out_channels,
+            kernel_size=old_conv1.kernel_size,
+            stride=old_conv1.stride,
+            padding=old_conv1.padding,
+            bias=False,
         )
-        
-        self.model.maxpool = nn.Sequential() # type: ignore
-        
+
+        with torch.no_grad():
+            self.model.conv1.weight.copy_(old_conv1.weight.mean(dim=1, keepdim=True))
+
+        self.model.maxpool = nn.Identity()
+
         num_ftrs = self.model.fc.in_features
         self.model.fc = nn.Linear(num_ftrs, num_classes)
 
