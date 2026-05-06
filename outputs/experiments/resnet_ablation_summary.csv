@@ -1,0 +1,14 @@
+factor,setting,best_val_acc_mean,best_val_acc_std,runs
+label_smoothing,0.0,0.9938235294117647,,1
+label_smoothing,0.05,0.9920588235294118,,1
+label_smoothing,0.1,0.9914705882352941,,1
+optimizer,adam,0.9920588235294118,,1
+optimizer,adamw,0.9920588235294118,,1
+optimizer,sgd,0.47411764705882353,,1
+transform,aug_norm,0.9920588235294118,,1
+transform,no_aug_no_norm,0.9829411764705882,,1
+transform,no_aug_norm,0.9847058823529412,,1
+weight_decay,0,0.9923529411764705,,1
+weight_decay,1e-3,0.9920588235294118,,1
+weight_decay,1e-4,0.9920588235294118,,1
+weight_decay,1e-5,0.9923529411764705,,1

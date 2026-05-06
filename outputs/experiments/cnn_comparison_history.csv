@@ -1,0 +1,4 @@
+study,factor,setting,model,seed,epoch,train_loss,val_loss,val_acc
+cnn_comparison,model,lenet,lenet,42,1,1.392511562319363,0.7276867126750055,0.8588235294117647
+cnn_comparison,model,enhancedlenet,enhancedlenet,42,1,1.4390585161657894,0.6514977269640593,0.9297058823529412
+cnn_comparison,model,resnet,resnet,42,1,0.5486042824913474,0.3037172383237108,0.9976470588235294

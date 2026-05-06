@@ -1,0 +1,4 @@
+model,best_val_acc_mean,best_val_acc_std,runs
+enhancedlenet,0.9297058823529412,,1
+lenet,0.8588235294117647,,1
+resnet,0.9976470588235294,,1
